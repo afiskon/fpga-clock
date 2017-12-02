@@ -115,7 +115,6 @@ module top(
 
                 btn_inc_was_pressed <= 0;
             end
-
         end
 
         // once a second @ 12 MHz oscillator
