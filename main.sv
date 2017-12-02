@@ -1,6 +1,9 @@
 `default_nettype none
 
-module encode_digit(input [3:0] digit, input hide, output [0:6] seg);
+module encode_digit(
+		input logic [3:0] digit,
+		input logic hide,
+		output logic [0:6] seg);
     assign seg = (hide == 1) ? 0 :
                     (digit == 0) ? 8'b1111110:
                     (digit == 1) ? 8'b0110000:
@@ -15,16 +18,22 @@ module encode_digit(input [3:0] digit, input hide, output [0:6] seg);
                                    8'b1001111; // E for Error
 endmodule
 
-module inc_minute(input [3:0] min1, input [3:0] min2,
-                  output [3:0] out_min1, output [3:0] out_min2);
+module inc_minute(
+		input logic [3:0] min1,
+		input logic [3:0] min2,
+        output logic [3:0] out_min1,
+		output logic [3:0] out_min2);
     assign out_min1 = (min1 == 9) ? 0 : min1 + 1;
     assign out_min2 = (min1 == 9) ?
         ( (min2 == 5) ? 0 : min2 + 1 )
         : min2;
 endmodule
 
-module inc_hour(input [3:0] hour1, input [3:0] hour2,
-                output [3:0] out_hour1, output [3:0] out_hour2);
+module inc_hour(
+		input logic [3:0] hour1,
+		input logic [3:0] hour2,
+        output logic [3:0] out_hour1,
+		output logic [3:0] out_hour2);
     assign out_hour1 =
         (((hour2 != 2)&&(hour1 == 9)) || ((hour2 == 2)&&(hour1 == 3)))
         ? 0 : hour1 + 1;
@@ -34,33 +43,36 @@ module inc_hour(input [3:0] hour1, input [3:0] hour2,
         ? 0 : ( (hour1 == 9) ? hour2 + 1 : hour2 );
 endmodule
 
-module top(input clk,
-           input btn_set, input btn_inc,
-           output [0:7] seg, output [0:3] d);
-    reg [23:0] divider = 0;
-    reg [3:0] d_rot = 4'b1110;
-    reg [5:0] sec = 0;
+module top(
+		input logic clk,
+        input logic btn_set,
+		input logic btn_inc,
+        output logic [0:7] seg,
+		output logic [0:3] d);
+    logic [23:0] divider = 0;
+    logic [3:0] d_rot = 4'b1110;
+    logic [5:0] sec = 0;
 
     // the time is displayed like this:
     // hour2 hour1 : min2 min1
-    reg [3:0] min1 = 0; 
-    reg [3:0] min2 = 0;
-    reg [3:0] hour1 = 0;
-    reg [3:0] hour2 = 0;
+    logic [3:0] min1 = 0; 
+    logic [3:0] min2 = 0;
+    logic [3:0] hour1 = 0;
+    logic [3:0] hour2 = 0;
 
-    reg [3:0] next_min1;
-    reg [3:0] next_min2;
-    reg [3:0] next_hour1;
-    reg [3:0] next_hour2;
+    logic [3:0] next_min1;
+    logic [3:0] next_min2;
+    logic [3:0] next_hour1;
+    logic [3:0] next_hour2;
 
-    reg [1:0] current_set = 0;
-    reg btn_set_was_pressed = 0;
-    reg btn_inc_was_pressed = 0;
+    logic [1:0] current_set = 0;
+    logic btn_set_was_pressed = 0;
+    logic btn_inc_was_pressed = 0;
 
     inc_minute im(min1, min2, next_min1, next_min2);
     inc_hour ih(hour1, hour2, next_hour1, next_hour2);
 
-    always @(posedge clk)
+    always_ff @(posedge clk)
     begin
         if(divider[9:0] == 0)
             d_rot <= { d_rot[2:0], d_rot[3] };
@@ -128,19 +140,21 @@ module top(input clk,
   
     assign d = d_rot;
 
-    reg [3:0] disp;
-    assign disp = (d_rot == 4'b1110) ? min1:
-                  (d_rot == 4'b1101) ? min2:
-                  (d_rot == 4'b1011) ? hour1:
-                  (d_rot == 4'b0111) ? hour2:
-                  13; // should never happen
+    logic [3:0] disp =
+		(d_rot == 4'b1110) ? min1:
+		(d_rot == 4'b1101) ? min2:
+		(d_rot == 4'b1011) ? hour1:
+		(d_rot == 4'b0111) ? hour2:
+		13; // should never happen
 
-    reg hide_seg = (((current_set == 1) &&
-                     ((d_rot == 4'b0111) || (d_rot == 4'b1011))) ||
-                    ((current_set == 2) &&
-                     ((d_rot == 4'b1101) || (d_rot == 4'b1110)))) &&
-                    (sec[0] == 1);
+    logic hide_seg = (((current_set == 1) &&
+                      ((d_rot == 4'b0111) || (d_rot == 4'b1011))) ||
+                     ((current_set == 2) &&
+                      ((d_rot == 4'b1101) || (d_rot == 4'b1110)))) &&
+                     (sec[0] == 1);
+
     encode_digit enc1(disp, hide_seg, seg[0:6]);
+
     assign seg[7] = (d_rot == 4'b1011) && (sec[0] == 1);
 
 endmodule
