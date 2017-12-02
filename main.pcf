@@ -1,0 +1,19 @@
+set_io clk 21
+
+set_io seg[0] 44
+set_io seg[1] 45
+set_io seg[2] 47
+set_io seg[3] 48
+set_io seg[4] 56
+set_io seg[5] 60
+set_io seg[6] 61
+set_io seg[7] 62
+
+set_io d[3] 119
+set_io d[2] 118
+set_io d[1] 117
+set_io d[0] 116
+
+set_io btn_set 115
+set_io btn_inc 114
+
