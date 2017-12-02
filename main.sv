@@ -119,7 +119,6 @@ module top(input clk,
                     hour2 <= next_hour2;
                 end
             end
-
         end
         else 
             divider <= divider + 1;
