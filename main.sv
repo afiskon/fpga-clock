@@ -1,3 +1,5 @@
+`default_nettype none
+
 module encode_digit(input [3:0] digit, input hide, output [0:6] seg);
     assign seg = (hide == 1) ? 0 :
                     (digit == 0) ? 8'b1111110:
